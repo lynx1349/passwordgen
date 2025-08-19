@@ -3,6 +3,12 @@ from tkinter import messagebox
 import secrets
 import pyperclip
 
+try:
+	import pyperclip
+	HAS_PYPERCLIP = True
+except ImportError:
+	HAS_PYPERCLIP = False
+	
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=[];,.!@#$%^&*()_+{}:<>?/'
 
 def genPass():
@@ -27,8 +33,11 @@ def aboutButton():
 	
 	
 def copyButton():
-	messagebox.showinfo('Password copied', 'Password copied to clipboard.')
-	pyperclip.copy(password_var.get())
+	if HAS_PYPERCLIP:
+		messagebox.showinfo('Password copied', 'Password copied to clipboard.')
+		pyperclip.copy(password_var.get())
+	else:
+		messagebox.showwarning('Password generator', 'pyperclip required to copy password.')
 
 
 #GUI setup
