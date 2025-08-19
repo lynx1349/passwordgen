@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import random
+import secrets
 import pyperclip
 
 chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=[];,.!@#$%^&*()_+{}:<>?/'
@@ -9,18 +9,27 @@ def genPass():
 	try:
 		length = int(length_entry.get())
 		if length < 6:
-			messagebox.showwarning('Password to weak.', 'Please try again.')
+			messagebox.showwarning('Password too weak.', 'Please try again.')
 			password_var.set('')
 			return
 			
-		password = ''.join(random.choice(chars) for i in range(length))
+		password = secrets.choice('ABCDEFGHIJKLMNOPQRSTUVWXYZ') + ''.join(
+		secrets.choice(chars) for i in range(length - 1))
 		password_var.set(password)
-		result_var.set('Password copied to clipboard.')
-		pyperclip.copy(password)
 		
 	except ValueError:
 		messagebox.showerror('Invalid input', 'Please enter a valid number.')
 		password_var.set('')
+
+
+def aboutButton():
+	messagebox.showinfo('Password Generator', 'By: lynx1349 v0.01')
+	
+	
+def copyButton():
+	messagebox.showinfo('Password copied', 'Password copied to clipboard.')
+	pyperclip.copy(password_var.get())
+
 
 #GUI setup
 window = tk.Tk()
@@ -36,17 +45,14 @@ length_entry.pack()
 gen_button = tk.Button(window, text='Generate Password', command=genPass)
 gen_button.pack(pady=10)
 
-result_var = tk.StringVar()
 password_var = tk.StringVar()
 
 password_entry = tk.Entry(window, textvariable=password_var, font=('Courier', 12),
 			  fg='green', justify='center', state='readonly', readonlybackground='white')
 password_entry.pack(pady=5, ipadx=5)
 
-result_label = tk.Label(window, textvariable=result_var, fg='blue')
-result_label.pack(pady=5)
-
-tk.Button(window, text='About', command=window.destroy).pack(pady=5)
+tk.Button(window, text='Copy', command=copyButton).pack(pady=5)
+tk.Button(window, text='About', command=aboutButton).pack(pady=5)
 tk.Button(window, text='Exit', command=window.destroy).pack(pady=5)
 
 window.mainloop()
