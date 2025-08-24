@@ -39,7 +39,7 @@ def decrypt_password(master_password: str, enc_data: dict) -> str:
     return f.decrypt(enc_data["password"].encode()).decode()
 
 #Saving the password to file
-DATA_FILE = 'encPass.json'
+DATA_FILE = 'Pwrds.json'
 
 if os.path.exists(DATA_FILE):
 	with open(DATA_FILE, 'r') as f:
