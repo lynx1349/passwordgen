@@ -1,16 +1,12 @@
-requires pyperclip to copy to clipboard (pip install pyperclip)	
----------------------------------------------------------------
-Just a simple password generator
+About
+-----
+Just a simple password generator with a built in password manager that encrypts the password. Generate a password, save it with an account name, and access saved passwords.
 
+When saving a password you must enter a master password (DO NOT FORGET IT) and it will create "Pwrds.json" with the encrypted passwords. There can be multiple users who have diferent master passwords
+ 
+NOTE: DO NOT DELETE "encPass.json" OTHERWISE ALL PASSWORDS WILL BE DELETED
 
-Features
+Requires	
 --------
-Simple GUI
-Generates a random password
-Copy the password to clipboard
-Save the password in the built in password manager
-
-TODO
-----
-Add encrpytion to password manager
-Add options for special characters/numbers
+pyperclip to copy to clipboard (pip install pyperclip)
+cryptography (pip install cryptography)
