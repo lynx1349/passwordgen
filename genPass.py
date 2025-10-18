@@ -1,5 +1,7 @@
 import os
 import json
+import hashlib
+import requests
 import base64
 import secrets
 import tkinter as tk
@@ -10,14 +12,6 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
-
-# Clipboard (optional)
-try:
-    import pyperclip
-    HAS_PYPERCLIP = True
-except ImportError:
-    HAS_PYPERCLIP = False
-
 
 # ---------------------- ENCRYPTION ---------------------- #
 def derive_key(master_password: str, salt: bytes) -> bytes:
@@ -48,6 +42,49 @@ def decrypt_password(master_password: str, enc_data: dict) -> str:
     key = derive_key(master_password, salt)
     f = Fernet(key)
     return f.decrypt(enc_data["password"].encode()).decode()
+
+#HIBP API shit
+def check_pwned(password: str) -> int:
+    """Return number of times password appears in known breaches."""
+    sha1pwd = hashlib.sha1(password.encode("utf-8")).hexdigest().upper()
+    prefix, suffix = sha1pwd[:5], sha1pwd[5:]
+
+    url = f"https://api.pwnedpasswords.com/range/{prefix}"
+    try:
+        res = requests.get(url, timeout=5)
+        if res.status_code != 200:
+            raise Exception(f"HIBP API error: {res.status_code}")
+    except Exception as e:
+        print(f"[!] Error contacting HIBP API: {e}")
+        return -1  # indicate failure
+
+    hashes = (line.split(":") for line in res.text.splitlines())
+    for h, count in hashes:
+        if h == suffix:
+            return int(count)
+    return 0
+
+
+def check_breach():
+    pwd = password_var.get()
+    if not pwd:
+        messagebox.showwarning("Check Breach", "Generate or enter a password first.")
+        return
+
+    count = check_pwned(pwd)
+    if count == -1:
+        messagebox.showerror("Error", "Could not contact HaveIBeenPwned API")
+    elif count == 0:
+        messagebox.showinfo("Check Breach", "This password has NOT been pwned")
+    else:
+        messagebox.showwarning("Check Breach", f"THIS PASSWORD HAS APEARED {count:,} TIMES IN DATA BREACHES")
+
+# Clipboard (optional)
+try:
+    import pyperclip
+    HAS_PYPERCLIP = True
+except ImportError:
+    HAS_PYPERCLIP = False
 
 
 # ---------------------- DATA FILE ---------------------- #
@@ -193,7 +230,7 @@ def view_passwords():
 # ---------------------- GUI ---------------------- #
 window = tk.Tk()
 window.title("Password Generator")
-window.geometry("250x400")
+window.geometry("250x420")
 window.resizable(False, False)
 
 tk.Label(window, text="Password length:", font=("Courier", 14, "bold")).pack(pady=10)
@@ -219,6 +256,7 @@ toggle_button = tk.Button(window, text="Show", command=toggle_password)
 toggle_button.pack(pady=5)
 password_entry.config(show="*")
 
+tk.Button(window, text="Check Breach", command=check_breach).pack(pady=5)
 tk.Button(window, text="Copy", command=copy_password).pack(pady=5)
 tk.Button(window, text="Save", command=save_password).pack(pady=5)
 tk.Button(window, text="Saved Passwords", command=view_passwords).pack(pady=5)
